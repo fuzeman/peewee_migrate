@@ -11,7 +11,7 @@ from .utils import exec_in
 from peewee import * # noqa
 
 
-LOGGER = logging.getLogger()
+LOGGER = logging.getLogger(__name__)
 MIGRATE_TEMPLATE = op.join(
     op.abspath(op.dirname(__file__)),
     'migration.tmpl'
