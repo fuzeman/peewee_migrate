@@ -16,7 +16,8 @@ except ImportError:
     from peewee import DateTimeField
 
 
-LOGGER = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+
 MIGRATE_TEMPLATE = op.join(
     op.abspath(op.dirname(__file__)),
     'migration.tmpl'
@@ -38,7 +39,7 @@ class Router(object):
     def __init__(self, migrate_dir, **options):
 
         if not op.exists(migrate_dir):
-            LOGGER.warn('Migration directory: %s does not exists.', migrate_dir)
+            log.warn('Migration directory: %s does not exists.', migrate_dir)
             md(migrate_dir)
 
         config = {}
@@ -49,7 +50,7 @@ class Router(object):
                 if not key.startswith('_'):
                     options[key] = config[key]
         else:
-            LOGGER.warn('Configuration file `conf.py` didnt found in migration directory')
+            log.warn('Configuration file `conf.py` didnt found in migration directory')
 
         self.migrate_dir = migrate_dir
 
@@ -64,7 +65,7 @@ class Router(object):
             assert self.proxy.database
             MigrateHistory.create_table()
         except (AttributeError, AssertionError):
-            LOGGER.error("Invalid database: %s", self.db)
+            log.error("Invalid database: %s", self.db)
             sys.exit(1)
         except Exception:
             pass
@@ -90,7 +91,7 @@ class Router(object):
     def run(self, name=None):
         """ Run migrations. """
 
-        LOGGER.info('Start migrations')
+        log.info('Running migrations...')
 
         migrator = Migrator(self.db)
 
@@ -102,23 +103,23 @@ class Router(object):
         db_migrations = self.db_migrations
 
         if db_migrations:
-            LOGGER.info('Database has %d migrations applied:\n  %s', len(db_migrations), '\n  '.join(db_migrations))
+            log.info('Database has %d migrations applied:\n  %s', len(db_migrations), '\n  '.join(db_migrations))
 
         # Run migrations that haven't been applied yet
         diff = self.diff
 
         if diff:
-            LOGGER.info('Applying %d database migrations:\n  %s', len(diff), '\n  '.join(diff))
+            log.info('Applying %d database migrations:\n  %s', len(diff), '\n  '.join(diff))
 
             for name in diff:
                 self.run_one(name, migrator)
         else:
-            LOGGER.info('Nothing to migrate')
+            log.info('Nothing to migrate')
 
     def run_one(self, name, migrator):
         """ Run a migration. """
 
-        LOGGER.info('Run "%s"', name)
+        log.info('Run "%s"', name)
 
         try:
             with open(op.join(self.migrate_dir, name + '.py')) as f:
@@ -133,20 +134,20 @@ class Router(object):
                     logging.info('Migrated %s', name)
 
         except Exception as exc:
-            LOGGER.error(exc, exc_info=True)
+            log.error(exc, exc_info=True)
             self.db.rollback()
 
     def create(self, name):
         """ Create a migration. """
 
-        LOGGER.info('Create a migration "%s"', name)
+        log.info('Create a migration "%s"', name)
 
         num = len(self.fs_migrations)
         prefix = '{:03}_'.format(num)
         name = prefix + name + '.py'
         copy(MIGRATE_TEMPLATE, op.join(self.migrate_dir, name))
 
-        LOGGER.info('Migration has created %s', name)
+        log.info('Migration has created %s', name)
 
 
 class MigrateHistory(Model):
