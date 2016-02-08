@@ -318,10 +318,11 @@ class Migrator(object):
         self.migrator = SchemaMigrator.from_database(self.db)
 
     def create_table(self, model):
-        self.db.create_table(model)
+        model.create_table(db=self.db)
 
     def create_tables(self, *models):
-        self.db.create_tables(models)
+        for model in models:
+            self.create_table(model)
 
     def drop_table(self, model):
         self.db.drop_table(model)
