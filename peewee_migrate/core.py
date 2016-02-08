@@ -160,7 +160,7 @@ class Router(object):
 
         return True
 
-    def match(self, migrations=None):
+    def match(self, migrations=None, check_all=False):
         # Retrieve current specification
         if migrations is None:
             migrations = self.db_migrations
@@ -199,6 +199,8 @@ class Router(object):
 
             if self._validate_schema(spec):
                 return name
+            elif not check_all:
+                break
 
         return None
 
